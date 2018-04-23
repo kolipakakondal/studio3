@@ -515,7 +515,7 @@ public class JSNodeTypeInferrer extends JSTreeWalker
 		{
 			IParseNode expression = returnValue.getExpression();
 
-			if (!expression.isEmpty())
+			if (expression != null && !expression.isEmpty())
 			{
 				foundReturnExpression = true;
 
