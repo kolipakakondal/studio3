@@ -165,6 +165,7 @@ public class JSCodeScanner extends AbstractFlexTokenScanner
 			case Terminals.EXCLAMATION:
 			case Terminals.EXCLAMATION_EQUAL:
 			case Terminals.EXCLAMATION_EQUAL_EQUAL:
+			case Terminals.ARROW:
 				return OPERATOR_TOKEN;
 
 			case Terminals.DELETE:
