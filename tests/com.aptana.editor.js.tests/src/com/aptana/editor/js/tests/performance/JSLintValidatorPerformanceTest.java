@@ -32,7 +32,8 @@ import com.aptana.parsing.WorkingParseResult;
 import com.aptana.testing.categories.PerformanceTests;
 
 @Category({ PerformanceTests.class })
-public class JSLintValidatorPerformanceTest extends GlobalTimePerformanceTestCase
+@Deprecated // FIXME MErge with JSStyleValidatorPerformanceTest
+abstract class JSLintValidatorPerformanceTest extends GlobalTimePerformanceTestCase
 {
 	private AbstractBuildParticipant validator;
 
@@ -51,24 +52,7 @@ public class JSLintValidatorPerformanceTest extends GlobalTimePerformanceTestCas
 		super.tearDown();
 	}
 
-	protected AbstractBuildParticipant createValidator()
-	{
-		return new JSLintValidator()
-		{
-
-			@Override
-			protected String getPreferenceNode()
-			{
-				return JSCorePlugin.PLUGIN_ID;
-			}
-
-			@Override
-			public String getId()
-			{
-				return ID;
-			}
-		};
-	}
+	protected abstract AbstractBuildParticipant createValidator();
 
 	protected void perfValidate(String filename, int iterations) throws Exception
 	{
