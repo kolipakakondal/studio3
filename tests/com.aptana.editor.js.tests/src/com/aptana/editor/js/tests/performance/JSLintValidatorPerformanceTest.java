@@ -25,7 +25,6 @@ import com.aptana.index.core.FileStoreBuildContext;
 import com.aptana.index.core.build.BuildContext;
 import com.aptana.js.core.JSCorePlugin;
 import com.aptana.js.core.parsing.GraalJSParser;
-import com.aptana.js.internal.core.build.JSLintValidator;
 import com.aptana.parsing.IParseState;
 import com.aptana.parsing.ParseResult;
 import com.aptana.parsing.WorkingParseResult;
