@@ -2,6 +2,7 @@ package com.aptana.js.core.parsing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -391,11 +392,12 @@ class GraalASTWalker extends NodeVisitor<LexicalContext>
 			{
 				// Look up the previous var decl in this scope and steal it's start offset!
 				IParseNode parent = getCurrentNode();
-				JSVarNode firstVar = (JSVarNode) parent.getFirstChild(); // due to hoisting, this should be a var...
-				if (firstVar != null) {
+				JSVarNode firstVar = getVarNode(parent); // due to hoisting, this should be a var...
+				if (firstVar != null)
+				{
 					varStart = firstVar.getStartingOffset();
-//				} else {
-//					throw new IllegalStateException("Couldn't find first hoisted var to match up with!");
+					// } else {
+					// throw new IllegalStateException("Couldn't find first hoisted var to match up with!");
 				}
 			}
 			Symbol var = toSymbol(type, varStart, varStart + (keywordName.length() - 1));
@@ -444,6 +446,19 @@ class GraalASTWalker extends NodeVisitor<LexicalContext>
 		}
 
 		return super.enterVarNode(varNode);
+	}
+
+	private JSVarNode getVarNode(IParseNode parent)
+	{
+		IParseNode[] children = parent.getChildren();
+		for (int i = 0; i < children.length; i++)
+		{
+			if (children[i] instanceof JSVarNode)
+			{
+				return (JSVarNode) children[i];
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -563,7 +578,8 @@ class GraalASTWalker extends NodeVisitor<LexicalContext>
 			}
 			// Need to explicitly visit the params
 			int bodyStart = body.getStart();
-			if (body.isParameterBlock()) {
+			if (body.isParameterBlock())
+			{
 				// we have default args and the start position of the body is wrong. It points to the parameters!
 				Statement stmt = body.getLastStatement();
 				bodyStart = stmt.getStart();
@@ -571,10 +587,13 @@ class GraalASTWalker extends NodeVisitor<LexicalContext>
 			int lParen = findChar('(', ident.getFinish(), bodyStart);
 			int rParen;
 			// Arrow funcs with one param may have no parens
-			if (lParen == -1 && (funcNode instanceof JSArrowFunctionNode) && functionNode.getNumOfParams() == 1) {
+			if (lParen == -1 && (funcNode instanceof JSArrowFunctionNode) && functionNode.getNumOfParams() == 1)
+			{
 				lParen = functionNode.getParameter(0).getStart();
 				rParen = functionNode.getParameter(0).getFinish() - 1;
-			} else {
+			}
+			else
+			{
 				rParen = findLastChar(')', bodyStart);
 			}
 			addToParentAndPushNodeToStack(new JSParametersNode(lParen, rParen));
@@ -1086,12 +1105,19 @@ class GraalASTWalker extends NodeVisitor<LexicalContext>
 			IParseNode parent = getCurrentNode();
 			int lBrace;
 			int rBrace;
-			if (parent instanceof JSArrowFunctionNode) {
-				// If this is the body of an arrow func, it may not be in {}! Let's take the offsets as the truth for now
+			if (parent instanceof JSArrowFunctionNode)
+			{
+				// If this is the body of an arrow func, it may not be in {}! Let's take the offsets as the truth for
+				// now
 				lBrace = block.getStart();
 				rBrace = block.getFinish() - 1;
-			} else {
-				lBrace = findChar('{', block.getStart(), block.getFinish()); // FIXME We need to only accept it if there's only whitespace (or comments) between the initial position and where we find the char!
+			}
+			else
+			{
+				lBrace = findChar('{', block.getStart(), block.getFinish()); // FIXME We need to only accept it if
+																				// there's only whitespace (or comments)
+																				// between the initial position and
+																				// where we find the char!
 				rBrace = findLastChar('}', block.getFinish() - 1);
 				// usually a close brace is at end of block, but search backwards in case it's trailed by a
 				// comment. In case of functions, the parser handles them specially as a way to reset parse state
@@ -1183,17 +1209,17 @@ class GraalASTWalker extends NodeVisitor<LexicalContext>
 		Set<IParseNode> toRemove = mergeVarNodesByOffset(startOffsetToListToMerge);
 
 		// Now copy children, skipping the ones we want to remove
-		IParseNode[] newChildren = new IParseNode[children.length - toRemove.size()];
-		int x = 0;
+		Collection<IParseNode> newChildren = new ArrayList<IParseNode>();
 		for (int i = 0; i < children.length; i++)
 		{
 			if (!toRemove.contains(children[i]))
 			{
-				newChildren[x++] = children[i];
+				newChildren.add(children[i]);
 			}
 		}
+
 		// replace with modified listing!
-		statements.setChildren(newChildren);
+		statements.setChildren(newChildren.toArray(new IParseNode[newChildren.size()]));
 	}
 
 	private Map<Integer, List<JSVarNode>> gatherVarNodesToMergeByStartOffset(IParseNode[] children)
